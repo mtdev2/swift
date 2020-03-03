@@ -3755,31 +3755,6 @@ bool checkIfDifferentiableProgrammingEnabled(
   return false;
 }
 
-/// Checks whether differentiable programming is enabled for the given
-/// differentiation-related attribute. Returns true on error.
-bool checkIfDifferentiableProgrammingEnabled(
-    ASTContext &ctx, DeclAttribute *attr) {
-  auto &diags = ctx.Diags;
-  // The experimental differentiable programming flag must be enabled.
-  if (!ctx.LangOpts.EnableExperimentalDifferentiableProgramming) {
-    diags
-        .diagnose(attr->getLocation(),
-                  diag::experimental_differentiable_programming_disabled)
-        .highlight(attr->getRangeWithAt());
-    return true;
-  }
-  // The `Differentiable` protocol must be available.
-  // If unavailable, the `_Differentiation` module should be imported.
-  if (!ctx.getProtocol(KnownProtocolKind::Differentiable)) {
-    diags
-        .diagnose(attr->getLocation(), diag::attr_used_without_required_module,
-                  attr, ctx.Id_Differentiation)
-        .highlight(attr->getRangeWithAt());
-    return true;
-  }
-  return false;
-}
-
 llvm::Expected<IndexSubset *> DifferentiableAttributeTypeCheckRequest::evaluate(
     Evaluator &evaluator, DifferentiableAttr *attr) const {
   // Skip type-checking for implicit `@differentiable` attributes. We currently
