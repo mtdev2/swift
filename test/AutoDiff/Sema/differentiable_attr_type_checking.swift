@@ -153,7 +153,10 @@ struct DifferentiableInstanceMethod: Differentiable {
 }
 
 // Test subscript methods.
-struct SubscriptMethod {
+struct SubscriptMethod: Differentiable {
+  typealias TangentVector = DummyTangentVector
+  mutating func move(along _: TangentVector) {}
+
   @differentiable // ok
   subscript(implicitGetter x: Float) -> Float {
     return x
@@ -168,14 +171,14 @@ struct SubscriptMethod {
   subscript(explicit x: Float) -> Float {
     @differentiable // ok
     get { return x }
-    @differentiable // expected-error {{'@differentiable' attribute cannot be applied to this declaration}}
+    @differentiable // ok
     set {}
   }
 
   subscript(x: Float, y: Float) -> Float {
     @differentiable // ok
     get { return x + y }
-    @differentiable // expected-error {{'@differentiable' attribute cannot be applied to this declaration}}
+    @differentiable // ok
     set {}
   }
 }
@@ -658,16 +661,15 @@ extension InoutParameters {
   mutating func mutatingMethod(_ other: Self) -> Self {}
 }
 
-// Test unsupported accessors: `set`, `_read`, `_modify`.
+// Test accessors: `set`, `_read`, `_modify`.
 
-struct UnsupportedAccessors: Differentiable {
+struct Accessors: Differentiable {
   typealias TangentVector = DummyTangentVector
   mutating func move(along _: TangentVector) {}
 
   var stored: Float
   var computed: Float {
     // `set` has an `inout` parameter: `(inout Self) -> (Float) -> ()`.
-    // expected-error @+1 {{'@differentiable' attribute cannot be applied to this declaration}}
     @differentiable
     set { stored = newValue }
 
