@@ -238,20 +238,15 @@ class TensorFlow(product.Product):
                                   stdin=yes_process.stdout)
             yes_process.terminate()
 
-            tensorflow_target = "//tensorflow:tensorflow"
-            x10_target = ''
-            if self.args.enable_x10:
-                x10_target = "//tensorflow/compiler/tf2xla/xla_tensor:libx10.so"
-
             # Build TensorFlow via bazel.
             shell.call([
                 self.toolchain.bazel,
                 "build",
                 "-c", "opt",
                 "--define", "framework_shared_object=false",
-                tensorflow_target,
-                x10_target,
-            ])
+                '//tensorflow:tensorflow',
+            ] + ["//tensorflow/compiler/tf2xla/xla_tensor:libx10.so"] if
+                self.args.enable_x10 else [])
 
         # bazel builds libraries with version suffixes, e.g.
         # "libtensorflow.{dylib,so}.x.y.z".
